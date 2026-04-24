@@ -1,0 +1,9 @@
+# Workspace and eval artifacts (development only)
+linearize-workspace/
+evals/
+
+# Claude Code local skill install
+.claude/
+
+# OS
+.DS_Store

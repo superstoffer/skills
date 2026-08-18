@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "superstoffer-skills",
+  "owner": {
+    "name": "Christoffer Baadsgaard"
+  },
+  "metadata": {
+    "description": "Christoffer Baadsgaard's Claude Code skills",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "superstoffer",
+      "source": "./",
+      "description": "Christoffer Baadsgaard's Claude Code skills. Currently: triage, which turns unstructured input into well-formed issues in your project tracker.",
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "triage",
+        "linear",
+        "issue-tracking"
+      ]
+    }
+  ]
+}

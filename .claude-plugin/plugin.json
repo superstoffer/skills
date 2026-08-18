@@ -1,0 +1,18 @@
+{
+  "name": "superstoffer",
+  "version": "1.0.0",
+  "description": "Christoffer Baadsgaard's Claude Code skills. Currently: triage, which turns unstructured input into well-formed issues in your project tracker.",
+  "author": {
+    "name": "Christoffer Baadsgaard",
+    "url": "https://github.com/superstoffer"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/superstoffer/skills",
+  "keywords": [
+    "skills",
+    "triage",
+    "linear",
+    "issue-tracking",
+    "productivity"
+  ]
+}

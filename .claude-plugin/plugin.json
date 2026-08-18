@@ -1,7 +1,7 @@
 {
   "name": "superstoffer",
-  "version": "1.0.0",
-  "description": "Christoffer Baadsgaard's Claude Code skills. Currently: triage, which turns unstructured input into well-formed issues in your project tracker.",
+  "version": "1.1.0",
+  "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs.",
   "author": {
     "name": "Christoffer Baadsgaard",
     "url": "https://github.com/superstoffer"
@@ -13,6 +13,9 @@
     "triage",
     "linear",
     "issue-tracking",
+    "design-doc",
+    "architecture",
+    "rfc",
     "productivity"
   ]
 }

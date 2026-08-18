@@ -18,6 +18,7 @@ Each skill is a self-contained folder under `skills/`, so you can also copy one 
 | Skill | What it does |
 | --- | --- |
 | [triage](skills/triage/README.md) | Turns messy, unstructured input — meeting notes, Slack threads, bug reports, customer feedback — into clean, well-formed issues in your tracker. Supports Linear. |
+| [design-doc](skills/design-doc/README.md) | Decides whether a software design doc is warranted, drafts it, reviews an existing one, or drives it toward approval. Based on Michael Lynch's guide. |
 
 ## License
 

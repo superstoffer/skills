@@ -1,13 +1,11 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
   "name": "superstoffer-skills",
   "owner": {
     "name": "Christoffer Baadsgaard"
   },
-  "metadata": {
-    "description": "Christoffer Baadsgaard's Claude Code skills",
-    "version": "1.0.0"
-  },
+  "description": "Christoffer Baadsgaard's Claude Code skills",
+  "version": "1.0.0",
   "plugins": [
     {
       "name": "superstoffer",

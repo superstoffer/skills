@@ -27,9 +27,14 @@ See the [repository README](../../README.md) for the plugin install.
 If you'd rather not use the plugin, copy this folder directly:
 
 ```bash
-cp -r skills/triage ~/.claude/skills/triage        # personal, all projects
-cp -r skills/triage .claude/skills/triage          # project-local, shared via git
+# personal, all projects
+mkdir -p ~/.claude/skills && cp -r skills/triage ~/.claude/skills/
+
+# project-local, shared via git
+mkdir -p .claude/skills && cp -r skills/triage .claude/skills/
 ```
+
+Both are safe to re-run to update an existing copy.
 
 ## Prerequisites
 

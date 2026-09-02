@@ -4,6 +4,77 @@
 **Status:** Approved, revised after multi-agent review
 **Repo:** `superstoffer/skills`
 
+---
+
+## Revision 2 — rescoped after RED (supersedes the structure below)
+
+The design below was written before any baseline existed. RED falsified its
+central premise, and the built skill differs materially. This section governs;
+the rest is kept as the record of how the decision was reached.
+
+**What RED found.** Four coding runs against two real projects, with the skill
+absent. Of 21 candidate rules: **14 PASS, 1 FAIL, 5 NOT-EXERCISED**. Claude
+unaided already used `getRepositoryToken` in spec providers, read a Prisma
+generator's `output` block to find the right import path, chose `findFirst`
+over `findUnique` for a non-unique lookup, imported `PartialType` from
+`@nestjs/swagger`, applied `ParseUUIDPipe` to uuid keys, preserved
+`synchronize: false`, and kept the password hash out of responses and JWT
+payloads — including the two findings the design review rated most dangerous.
+
+**Where it actually fails.** A tools-disabled knowledge probe returned
+DO-NOT-KNOW four times for NestJS v12, and answered TypeORM **confidently
+wrong**: "TypeORM has never left `0.x`" and "the array form was not removed",
+both labelled CERTAIN. Ground truth: `typeorm@latest` is the 1.x line and
+string-array `relations` is removed. The two failure shapes differ in severity
+— missing knowledge produces a refusal the user notices; confident wrongness
+produces code the user ships.
+
+**Consequence.** The skill ships version knowledge and a verification
+procedure. It does not ship a pitfalls list. Nine reference files became two.
+
+### As built
+
+```
+skills/nest/
+  SKILL.md                    129 lines   detection, conditional loads, verify, 2 hard rules
+  README.md                    69 lines
+  references/
+    orm.md                    151 lines   TypeORM 0.3->1.x, Prisma 6->7, adapters
+    version-matrix.md         115 lines   NestJS v11 -> v12 deltas
+```
+
+Cut entirely: `resource.md`, `auth.md`, `testing.md`, `pipeline.md`,
+`infrastructure.md`, and the nine-mode routing table — with no mode references
+left, there are no modes to route between. Of the candidate hard rules, one
+survived (env vars belong in the `ConfigModule` validation schema), joined by a
+guard against scaffolding into a non-Nest project.
+
+### GREEN result
+
+A synthetic fixture declaring `typeorm: ^1.1.0` and resolving to 1.1.1. Two
+agents, one naive and one told to use the skill, produced identical output:
+`relations: { profile: true }` — the object form required by 1.x. The naive
+agent **invoked the skill unprompted** and stated it would otherwise have
+written the 0.3-era array form. Both correctly skipped `version-matrix.md`
+because core is v11, and both reported honestly that they could not verify
+compilation on a fixture with no compiler.
+
+### What is verified, and what is not
+
+| Path | Status |
+|---|---|
+| TypeORM 1.x knowledge | **Verified** — GREEN, synthetic fixture |
+| Triggering without NestJS vocabulary | **Verified** — fired unprompted |
+| Conditional reference loading | **Verified** — skipped v12 file on a v11 project |
+| Resolved-version detection | **Verified** — reported 1.1.1 against a `^1.1.0` range |
+| Verify step's honesty under failure | **Verified** — declined to claim compilation |
+| Verify step's success path | **NOT verified** — no fixture with a working compiler was exercised |
+| NestJS v12 content | **NOT verified against real code** — no v12 project exists on this machine; written from release notes, the migration guide, and unpacked `@nestjs/common@12` type declarations |
+| Prisma 6->7 content | **NOT verified against real code** — written from the v7 upgrade guide and the official NestJS recipe |
+| Monorepo write paths | **NOT verified** — no Nest monorepo available |
+
+---
+
 ## Objective
 
 Add a NestJS skill to this collection, so NestJS scaffolding help is available

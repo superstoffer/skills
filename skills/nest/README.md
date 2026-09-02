@@ -67,3 +67,9 @@ A skill description is matched before any file is read, so that second path is b
 ## Scope
 
 NestJS server-side code only. Not general TypeScript, Express, or Fastify work. For deciding *whether* to build something rather than how, see [design-doc](../design-doc/README.md).
+
+## What is verified
+
+The TypeORM 1.x path, triggering, conditional reference loading, and resolved-version detection were all exercised against a fixture before release. The NestJS v12 and Prisma 6→7 content is verified against the release notes, the official migration guide, and the shipped type declarations — but **not against a real project**, because no v12 or Prisma-8 codebase was available to test on. Monorepo write paths are likewise unexercised.
+
+Treat those three as the parts most likely to need correction, and report anything that looks wrong.

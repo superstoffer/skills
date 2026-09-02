@@ -5,12 +5,12 @@
     "name": "Christoffer Baadsgaard"
   },
   "description": "Christoffer Baadsgaard's Claude Code skills",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "plugins": [
     {
       "name": "superstoffer",
       "source": "./",
-      "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs.",
+      "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles.",
       "license": "MIT",
       "keywords": [
         "skills",
@@ -19,7 +19,11 @@
         "issue-tracking",
         "design-doc",
         "architecture",
-        "rfc"
+        "rfc",
+        "nest",
+        "nestjs",
+        "typeorm",
+        "prisma"
       ]
     }
   ]

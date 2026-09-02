@@ -20,30 +20,50 @@ This artifact is a prompt document, so there is no unit test for "does this SKIL
 
 ## Fixtures
 
-Verified present on this machine on 2026-09-02:
+Selected on **committed HEAD state**, not working-tree state — the RED runs use
+git worktrees, which check out from HEAD. Verified 2026-09-02.
 
-| ID | Path | Nest (resolved) | Stack |
+| ID | Repo / subpath | Nest | Stack at HEAD |
 |---|---|---|---|
-| F-PRISMA | `/Users/christoffer/Privat/cb/epicly-aos/backend` | 11.1.13 (installed) | Prisma 7.4.0, class-validator, Jest |
-| F-TYPEORM | `/Users/christoffer/Privat/cb/easy-grocery/apps/server` | 11 (declared) | TypeORM 0.3.26, Jest |
-| F-SWAGGER | `/Users/christoffer/Privat/cb/fieldservice/apps/api` | 11.1.14 (declared) | Prisma 7.4.2, `@nestjs/swagger` 11.2.6, Jest |
-| F-VITEST | `/Users/christoffer/Privat/cb/doculogic/backend` | 11 (declared) | Vitest 3.1, no ORM |
-| F-V10 | `/Users/christoffer/Privat/cb/shopper/apps/api` | 10.4 (declared) | Jest, real `typecheck` script |
+| F-PRISMA | `fieldservice` / `apps/api` | ^11.1.14 | `@prisma/client` ^7.4.2 with **Prisma 7 generator** (`provider = "prisma-client"`, `output = "../src/generated/prisma"`), `@nestjs/swagger` ^11.2.6, `bcrypt` ^6.0.0, `class-validator` ^0.15.1, Jest, `uuid()` primary keys |
+| F-TYPEORM | `easy-grocery` / `apps/server` | ^11.0.1 | `typeorm` ^0.3.26, `@nestjs/typeorm` ^11.0.0, Jest, existing `user.entity.ts`, `synchronize: false` already set in both `app.module.ts` and `typeorm.datasource.ts` |
+| F-VITEST | `doculogic` / `backend` | ^11 | Vitest 3.1, no ORM |
+| F-V10 | `shopper` / `apps/api` | ^10.4 | Jest, real `typecheck` script |
 
-**Known gaps, carried as limitations:** no Nest v12 project and no TypeORM 1.x project exists locally. Those paths are written from primary sources and cannot be RED-baselined. Recorded in Task 26.
+**Rejected:** `epicly-aos/backend`. Its working tree has `@prisma/client` ^7.4.0,
+but that is part of 173 uncommitted files — at HEAD the project has a
+`schema.prisma` and no Prisma dependency. Unusable as a committed fixture.
 
-**Fixture safety protocol — apply to every fixture run:**
+F-PRISMA is unusually valuable: its generator block is already the Prisma 7
+form with an `output` path, so `PrismaClient` must be imported from
+`src/generated/prisma` rather than `@prisma/client`. That is the exact failure
+the design review identified, present in a real project.
+
+### Fixture safety protocol
+
+Use **git worktrees**, never in-place branches. Worktrees check out from
+committed HEAD, so a fixture with uncommitted work is both safe and usable —
+three of the five candidate repos were dirty when surveyed, and an in-place
+clean-check would have skipped the most important one.
 
 ```bash
-cd <FIXTURE>
-git status --porcelain            # MUST be empty; if not, skip this fixture
-git checkout -b red-baseline-throwaway
-# ... run the prompt ...
-git checkout . && git clean -fd
-git checkout - && git branch -D red-baseline-throwaway
+git -C <REPO_ROOT> worktree add "$SCRATCH/red/<run>" HEAD --detach
+# run the prompt inside "$SCRATCH/red/<run>/<subpath>", score there
+git -C <REPO_ROOT> worktree remove --force "$SCRATCH/red/<run>"
 ```
 
-Never leave a fixture modified. Never commit in a fixture.
+**One worktree per run, not per fixture** — two runs against the same fixture
+would otherwise collide.
+
+`node_modules` is absent in a worktree. RED does not need it: RED measures what
+code Claude writes, not whether it compiles. Task 21 (GREEN) does need it —
+symlink the origin repo's `node_modules` into the worktree for that phase only.
+
+The user's working trees are never modified. Verify after every run:
+
+```bash
+git -C <REPO_ROOT> status --porcelain | wc -l   # must match the pre-run count
+```
 
 ---
 
@@ -120,202 +140,91 @@ Claude-Session: https://claude.ai/code/session_01BmcLxhDBo1Trp3CQhsSWh3"
 
 ---
 
-### Task 2: RED run — CRUD resource on the Prisma fixture
+### Task 2: RED runs — dispatch four baselines
 
-**Files:**
-- Create: `<scratchpad>/red/R-prisma-resource.md`
+The `nest` skill does not exist on disk yet, so **any** Claude run is a valid
+baseline. Each run gets only a naive user-style request — no rules, no
+checklist, no mention of the skill. Contaminating the prompt invalidates the
+baseline.
 
-- [ ] **Step 1: Confirm the fixture is clean**
+Four runs, one worktree each, dispatched in parallel (independent worktrees
+cannot conflict):
+
+| Run | Worktree | Fixture subpath | Prompt given verbatim | Rules exercised |
+|---|---|---|---|---|
+| RED-1 | `red/swagger` | `apps/api` (F-PRISMA) | "Add a CRUD resource for orders. Fields: name (string) and total (number)." | R7, R10, R11, R13, R16, R18, R19, R20, R21 |
+| RED-2 | `red/typeorm` | `apps/server` (F-TYPEORM) | "Add a CRUD resource for orders. Fields: name (string) and total (number). Also add unit tests for the service." | R1, R6, R9, R12, R13, R15, R17, R21 |
+| RED-3 | `red/typeorm-guard` | `apps/server` (F-TYPEORM) | "Add JWT login. Users authenticate with email and password." | R2, R3, R4, R5, R14 |
+| RED-4 | `red/fs-auth` | `apps/api` (F-PRISMA) | "Add a roles guard so that only admins can delete a customer." | R6, R8 |
+
+Each dispatch also states: write files to disk, do not ask clarifying
+questions, `node_modules` is absent so builds cannot run, follow project
+conventions, and reply with only the list of files touched.
+
+- [ ] **Step 1: Create one worktree per run**
 
 ```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && git status --porcelain
+SCRATCH=<session scratchpad>
+mkdir -p "$SCRATCH/red"
+git -C /Users/christoffer/Privat/cb/fieldservice  worktree add "$SCRATCH/red/swagger"       HEAD --detach -q
+git -C /Users/christoffer/Privat/cb/fieldservice  worktree add "$SCRATCH/red/fs-auth"       HEAD --detach -q
+git -C /Users/christoffer/Privat/cb/easy-grocery  worktree add "$SCRATCH/red/typeorm"       HEAD --detach -q
+git -C /Users/christoffer/Privat/cb/easy-grocery  worktree add "$SCRATCH/red/typeorm-guard" HEAD --detach -q
 ```
-Expected: no output. If any output, stop and report — do not modify a dirty fixture.
+Expected: four directories under `$SCRATCH/red/`.
 
-- [ ] **Step 2: Branch**
+- [ ] **Step 2: Record the pre-run dirty count for each origin repo**
 
 ```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && git checkout -b red-baseline-throwaway
+for r in fieldservice easy-grocery; do
+  echo -n "$r "; git -C /Users/christoffer/Privat/cb/$r status --porcelain | wc -l
+done
 ```
-Expected: `Switched to a new branch 'red-baseline-throwaway'`
+Record these numbers. They must be unchanged at the end of Phase 1.
 
-- [ ] **Step 3: Run the baseline prompt**
+- [ ] **Step 3: Dispatch the four runs in parallel**
+
+One subagent per run, each given only the prompt from the table above plus its
+worktree path.
+
+- [ ] **Step 4: Score each run against `red-checklist.md`**
+
+For every rule in the "Rules exercised" column, record PASS, FAIL, or
+NOT-EXERCISED, with the verbatim offending line for each FAIL. **Fix nothing** —
+this phase only observes.
+
+- [ ] **Step 5: Confirm the origin repos are untouched**
 
 ```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && \
-claude -p "Add a CRUD resource for orders with fields name (string) and total (number)." \
-  > "$SCRATCH/red/R-prisma-resource.md" 2>&1
+for r in fieldservice easy-grocery; do
+  echo -n "$r "; git -C /Users/christoffer/Privat/cb/$r status --porcelain | wc -l
+done
 ```
+Expected: identical to Step 2.
 
-The `nest` skill does not exist yet, so this run **is** the baseline. Do not
-install or reference the skill before Phase 1 completes.
-
-- [ ] **Step 4: Score against the checklist**
+- [ ] **Step 6: Write results and commit**
 
 ```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend
-git diff --stat
-grep -nE "interface .*Dto|import type \{[^}]*Dto" -r src/ || echo "R10 pass"
-grep -rn "PrismaService" src/*/*.module.ts | grep -c exports || echo "R18 FAIL: not exported"
-grep -rnE "findUnique\(\{ *where" src/ || echo "R19 n/a"
-grep -rn "ParseIntPipe" src/ && grep -rn "@id .*Uuid\|uuid()" prisma/schema.prisma && echo "R16 FAIL"
-grep -rn "OrdersModule" src/app.module.ts || echo "R21 FAIL: not registered"
-```
-
-Record each of R3, R10, R11, R14, R16, R18, R19, R20, R21 as PASS or FAIL with
-the verbatim offending line. **Do not fix anything.**
-
-- [ ] **Step 5: Revert the fixture**
-
-```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && \
-git checkout . && git clean -fd && git checkout - && git branch -D red-baseline-throwaway && git status --porcelain
-```
-Expected: no output from `git status`.
-
-- [ ] **Step 6: Commit the finding**
-
-```bash
-git -C /Users/christoffer/Privat/cb/skills add docs/superpowers/plans/red-results.md
-git -C /Users/christoffer/Privat/cb/skills commit -m "RED: Prisma resource baseline
+git add docs/superpowers/plans/red-results.md
+git commit -m "RED: baseline results across Prisma and TypeORM fixtures
 
 Claude-Session: https://claude.ai/code/session_01BmcLxhDBo1Trp3CQhsSWh3"
 ```
 
----
-
-### Task 3: RED run — CRUD resource on the TypeORM fixture
-
-**Files:**
-- Append: `docs/superpowers/plans/red-results.md`
-
-- [ ] **Step 1: Clean check and branch**
+- [ ] **Step 7: Remove the worktrees**
 
 ```bash
-cd /Users/christoffer/Privat/cb/easy-grocery/apps/server && git status --porcelain && git checkout -b red-baseline-throwaway
-```
-Expected: no status output, then `Switched to a new branch`.
-
-- [ ] **Step 2: Run**
-
-```bash
-cd /Users/christoffer/Privat/cb/easy-grocery/apps/server && \
-claude -p "Add a CRUD resource for orders with fields name (string) and total (number), plus unit tests for the service." \
-  > "$SCRATCH/red/R-typeorm-resource.md" 2>&1
-```
-
-- [ ] **Step 3: Score R1, R6, R9, R12, R13, R15, R17, R21**
-
-```bash
-cd /Users/christoffer/Privat/cb/easy-grocery/apps/server
-grep -rn "provide: *Repository" src/ && echo "R12 FAIL: raw Repository token"
-grep -rn "getRepositoryToken" src/ || echo "R12 FAIL: token absent"
-grep -rn "should be defined" src/ && echo "R17 candidate FAIL"
-grep -n "@Get(':id')" -A3 -B3 src/orders/orders.controller.ts
-grep -rn "synchronize" src/ ormconfig* 2>/dev/null
-grep -n "OrdersModule" src/app.module.ts || echo "R21 FAIL: not registered"
-```
-
-Record verbatim. Do not fix.
-
-- [ ] **Step 4: Revert**
-
-```bash
-cd /Users/christoffer/Privat/cb/easy-grocery/apps/server && \
-git checkout . && git clean -fd && git checkout - && git branch -D red-baseline-throwaway && git status --porcelain
-```
-Expected: no output.
-
-- [ ] **Step 5: Commit findings**
-
-```bash
-git -C /Users/christoffer/Privat/cb/skills add docs/superpowers/plans/red-results.md
-git -C /Users/christoffer/Privat/cb/skills commit -m "RED: TypeORM resource baseline
-
-Claude-Session: https://claude.ai/code/session_01BmcLxhDBo1Trp3CQhsSWh3"
+git -C /Users/christoffer/Privat/cb/fieldservice worktree remove --force "$SCRATCH/red/swagger"
+git -C /Users/christoffer/Privat/cb/fieldservice worktree remove --force "$SCRATCH/red/fs-auth"
+git -C /Users/christoffer/Privat/cb/easy-grocery worktree remove --force "$SCRATCH/red/typeorm"
+git -C /Users/christoffer/Privat/cb/easy-grocery worktree remove --force "$SCRATCH/red/typeorm-guard"
 ```
 
 ---
 
-### Task 4: RED run — auth on the Prisma fixture
-
-- [ ] **Step 1: Clean check and branch**
-
-```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && git status --porcelain && git checkout -b red-baseline-throwaway
-```
-Expected: no status output.
-
-- [ ] **Step 2: Run**
-
-```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && \
-claude -p "Add JWT login. Users authenticate with email and password." \
-  > "$SCRATCH/red/R-prisma-auth.md" 2>&1
-```
-
-- [ ] **Step 3: Score R2, R3, R4, R5, R14**
-
-```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend
-grep -rn "from 'bcrypt'" src/ && grep -c '"bcryptjs"' package.json && echo "R2 FAIL: wrong package"
-grep -rnE "secret: *'|secret: *\"" src/ && echo "R4 FAIL: literal secret"
-grep -rn "password" src/auth/ | grep -vE "compare|hash|Dto|@|password:" && echo "R3 review needed"
-grep -rn "validationSchema\|validate:" src/app.module.ts || echo "R5 FAIL: no startup validation"
-grep -rn "forwardRef" src/auth/auth.module.ts src/users/users.module.ts || echo "R14 candidate FAIL"
-```
-
-- [ ] **Step 4: Revert**
-
-```bash
-cd /Users/christoffer/Privat/cb/epicly-aos/backend && \
-git checkout . && git clean -fd && git checkout - && git branch -D red-baseline-throwaway && git status --porcelain
-```
-Expected: no output.
-
-- [ ] **Step 5: Commit findings**
-
-```bash
-git -C /Users/christoffer/Privat/cb/skills add docs/superpowers/plans/red-results.md
-git -C /Users/christoffer/Privat/cb/skills commit -m "RED: Prisma auth baseline
-
-Claude-Session: https://claude.ai/code/session_01BmcLxhDBo1Trp3CQhsSWh3"
-```
-
----
-
-### Task 5: RED run — roles guard and Swagger
-
-- [ ] **Step 1: Roles guard on F-TYPEORM**
-
-```bash
-cd /Users/christoffer/Privat/cb/easy-grocery/apps/server && git status --porcelain && git checkout -b red-baseline-throwaway && \
-claude -p "Add a roles guard so only admins can delete an order." > "$SCRATCH/red/R-guard.md" 2>&1
-grep -rn "getAllAndMerge" src/ && echo "R8 FAIL: merge"
-grep -rnE "getAllAndOverride\([^,]+, *\[\s*context.getClass" src/ && echo "R8 FAIL: order reversed"
-git checkout . && git clean -fd && git checkout - && git branch -D red-baseline-throwaway
-```
-Expected: `git status --porcelain` silent at start and end.
-
-- [ ] **Step 2: Swagger annotation on F-SWAGGER**
-
-```bash
-cd /Users/christoffer/Privat/cb/fieldservice/apps/api && git status --porcelain && git checkout -b red-baseline-throwaway && \
-claude -p "Add OpenAPI annotations to the controllers and DTOs." > "$SCRATCH/red/R-swagger.md" 2>&1
-grep -rn "@nestjs/mapped-types" src/ && echo "R7 FAIL: wrong PartialType source"
-git checkout . && git clean -fd && git checkout - && git branch -D red-baseline-throwaway
-```
-
-- [ ] **Step 3: Commit findings**
-
-```bash
-git -C /Users/christoffer/Privat/cb/skills add docs/superpowers/plans/red-results.md
-git -C /Users/christoffer/Privat/cb/skills commit -m "RED: guard and swagger baselines
-
-Claude-Session: https://claude.ai/code/session_01BmcLxhDBo1Trp3CQhsSWh3"
-```
-
----
+> **Numbering note:** Tasks 3–5 of the original plan (one task per RED run)
+> were consolidated into Task 2 when the runs became parallel worktree
+> dispatches. The numbering gap is intentional; no work was dropped.
 
 ### Task 6: Prune the rule list
 

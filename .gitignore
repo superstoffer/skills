@@ -5,5 +5,8 @@ evals/
 # Claude Code local skill install
 .claude/
 
+# Conductor workspace scratch (attachments, baseline fixtures, screenshots)
+.context/
+
 # OS
 .DS_Store

@@ -5,12 +5,12 @@
     "name": "Christoffer Baadsgaard"
   },
   "description": "Christoffer Baadsgaard's Claude Code skills",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "plugins": [
     {
       "name": "superstoffer",
       "source": "./",
-      "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles.",
+      "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles; visual-design encodes the visual craft Claude skips unaided — OKLCH palettes, single emphasis, and an optical pass.",
       "license": "MIT",
       "keywords": [
         "skills",
@@ -23,7 +23,14 @@
         "nest",
         "nestjs",
         "typeorm",
-        "prisma"
+        "prisma",
+        "visual-design",
+        "ui",
+        "typography",
+        "color",
+        "oklch",
+        "design-tokens",
+        "layout"
       ]
     }
   ]

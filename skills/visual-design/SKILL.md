@@ -62,7 +62,7 @@ Top-down. Read a reference only when that step is non-trivial in the task.
 | 1 | Spacing unit (4/8) and type scale (base, ratio, snapped to integer px). Every later value comes from these two sets. | `references/proportion-and-layout.md` for scales, grids, margins, column math |
 | 2 | Palette in OKLCH: neutrals with a trace of brand hue, one accent, status colors at matched L and C. Check every text pair; WCAG 2 is the floor, APCA the tuning. Dark mode remaps the semantic tier only. | `references/color.md` |
 | 3 | Type: measure ≤ 60ch, line height and tracking inverse to size, ≤ 3 prominence levels, ≤ 2 families. | `references/typography.md` |
-| 4 | Rhythm and structure: inner gaps smaller than outer gaps at every level; parents own sibling spacing; tokens in three tiers. | `references/tokens-and-systems.md`; `references/perception-laws.md` for target size, choice count, response timing |
+| 4 | Rhythm and structure: inner gaps smaller than outer gaps at every level; parents own sibling spacing; tokens in three tiers. | `references/tokens-and-systems.md`; `references/perception-laws.md` for grouping cues, target size, choice count, response timing |
 | 5 | Optical pass. | `references/optical-correction.md` |
 | 6 | Critique pass with the checklist below; findings ordered by leverage. | `references/heuristics-and-critique.md` |
 
@@ -172,12 +172,15 @@ Top-down. Read a reference only when that step is non-trivial in the task.
   measured midpoints
 - `references/color.md` — OKLCH with numbers, ramps, Albers, Bezold,
   Helmholtz–Kohlrausch, WCAG 2 vs APCA table, 60-30-10, dark mode
-- `references/perception-laws.md` — Gestalt, Weber, Fitts, Hick, Miller,
-  Tesler, Jakob, Doherty, Von Restorff, serial position, peak–end,
-  aesthetic–usability, each with what it does *not* apply to
+- `references/perception-laws.md` — Prägnanz and context-dependent Gestalt
+  grouping cues, Weber, Fitts, Hick, Miller, Tesler, Postel, Jakob,
+  Doherty, Parkinson, Von Restorff, serial position, Zeigarnik and
+  Ovsiankina, endowed progress, peak–end, aesthetic–usability, each with
+  what it does *not* apply to
 - `references/heuristics-and-critique.md` — Rams, Nielsen, Shneiderman,
-  Norman, Tufte, CRAP, progressive disclosure, least astonishment, ma,
-  notan; the critique procedure and extended failure list
+  Norman, Tufte, CRAP, Occam's razor, Pareto, progressive disclosure,
+  least astonishment, ma, notan; the critique procedure and extended
+  failure list
 - `references/tokens-and-systems.md` — atomic design, three-tier tokens
   with a full light/dark example, DTCG format, double diamond
 - `scripts/color.py` — `oklch`, `hex`, `contrast` (WCAG 2 + APCA),

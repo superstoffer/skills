@@ -83,6 +83,43 @@ Robin Williams's four:
 - **Proximity**: related things close, unrelated things apart. See
   Gestalt in `perception-laws.md`.
 
+## Occam's razor
+
+Among designs that satisfy the same requirements, prefer the one with the
+fewest parts — fewest steps, fewest controls, fewest distinct treatments.
+The operational form is subtractive, and it is a test rather than a
+preference: build what works, then remove one element at a time until the
+next removal breaks something. Whatever came out without loss was
+decoration.
+
+The clause that does the work is *satisfy the same requirements*. Dropping
+a needed affordance is not parsimony, it is an unfinished design — so the
+razor arbitrates between finished alternatives, it does not license
+cutting scope. Rams's "as little design as possible" and Nielsen's
+"aesthetic and minimalist" are the same idea stated as an aspiration; this
+is the version you can actually run.
+
+## Pareto principle
+
+Roughly 80% of effects come from 20% of causes — Pareto's observation
+about land ownership, generalised by Juran as "the vital few". Not a law,
+and not literally 80/20. The usable claim is that impact is heavily
+skewed and it pays to find out which few things carry it.
+
+- A handful of screens carry most of the usage: take those to the last
+  detail, accept a plainer treatment elsewhere.
+- A handful of components (button, input, card, the type ramp) cover most
+  of the surface, which is why a design system pays off there first.
+- A handful of defects produce most of the cheapness. This is why a
+  critique report is ordered by leverage rather than by file position;
+  the leverage ranking in SKILL.md is this principle applied to the design
+  principles themselves.
+
+Not an excuse to abandon the tail. Error, empty and edge states are
+low-traffic and high-stakes, and peak-end says they set the memory of the
+whole product. The skew is in *effort allocation*, not in whether
+something ships working.
+
 ## Progressive disclosure
 
 Show the few things most people need; reveal the rest on request, in
@@ -145,3 +182,10 @@ Beyond the list in SKILL.md:
 - Numbers that should align vertically set in proportional figures
 - Animations with no `prefers-reduced-motion` guard
 - Skeleton or spinner shown for responses under 100ms (flicker)
+- A spanning divider that partitions content which should read as one group
+- A long or interruptible multi-step flow with no preserved state, clear
+  next action or explicit end state
+- A field rejecting a format it could have parsed (spaces in a card
+  number, parentheses in a phone number, a pasted value with formatting)
+- A real deadline or expiring hold that is hidden or unclear, or an
+  invented deadline that creates fake urgency

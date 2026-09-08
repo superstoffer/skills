@@ -1,7 +1,7 @@
 {
   "name": "superstoffer",
-  "version": "1.3.0",
-  "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles; visual-design encodes the visual craft Claude skips unaided — OKLCH palettes, single emphasis, and an optical pass.",
+  "version": "1.4.0",
+  "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles; visual-design encodes the visual craft Claude skips unaided — OKLCH palettes, single emphasis, and an optical pass. agentic-security-review audits a skill, plugin, MCP server, or hook against the OWASP Agentic Skills Top 10 before install.",
   "author": {
     "name": "Christoffer Baadsgaard",
     "url": "https://github.com/superstoffer"
@@ -27,6 +27,11 @@
     "color",
     "oklch",
     "design-tokens",
-    "layout"
+    "layout",
+    "security",
+    "owasp",
+    "agentic-security-review",
+    "supply-chain",
+    "mcp"
   ]
 }

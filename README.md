@@ -21,6 +21,7 @@ Each skill is a self-contained folder under `skills/`, so you can also copy one 
 | [design-doc](skills/design-doc/README.md) | Decides whether a software design doc is warranted, drafts it, reviews an existing one, or drives it toward approval. Based on Michael Lynch's guide. |
 | [nest](skills/nest/README.md) | Supplies the NestJS version facts Claude can't have from training — v12 deltas, TypeORM 1.x, Prisma 7 — then verifies generated code compiles and its module graph resolves. |
 | [visual-design](skills/visual-design/README.md) | Encodes the visual craft Claude skips unaided — OKLCH palettes, a single emphasis device, and a mandatory optical pass — on anything with a visual surface, with the golden ratio ranked honestly. |
+| [agentic-security-review](skills/agentic-security-review/README.md) | Audits a skill, plugin, MCP server, or hook against the OWASP Agentic Skills Top 10 and the lethal trifecta before you install it — running read-only and treating the reviewed material as data, never instructions. |
 
 ## License
 

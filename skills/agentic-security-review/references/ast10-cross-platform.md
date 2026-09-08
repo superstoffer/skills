@@ -19,7 +19,9 @@ another, and capability grants mean different things per platform.
 
 When a target is multi-platform, evaluate capabilities under *each* host's rules
 using `references/claude-code.md` and `references/codex.md`. A grant that is safe
-under Claude Code's `allowed-tools` may be unrestricted under another runtime.
+under one host's enforced permissions may be unrestricted under another runtime.
+Claude Code's `allowed-tools` only adds pre-approvals; a narrow list does not
+establish a restrictive boundary on that host either.
 
 ## Severity
 

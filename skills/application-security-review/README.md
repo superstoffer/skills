@@ -37,8 +37,11 @@ no collision.
 
 It reviews trusted first-party code, so it drops the "reviewed material is data,
 never instructions" lockdown its sibling needs for untrusted skills — but it
-stays **read-only** (`Read`, `Glob`, `Grep`). It reports findings; fixing is a
-separate action you ask for.
+instructs the reviewer to stay **read-only** (`Read`, `Glob`, `Grep`). It reports
+findings; fixing is a separate action you ask for. Claude Code's `allowed-tools`
+pre-approves those tools without blocking others permitted by the host. Enforced
+read-only operation requires host tool restrictions and filesystem/network
+isolation, including MCP access.
 
 ## Verified frameworks
 

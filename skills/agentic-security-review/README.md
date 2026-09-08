@@ -26,13 +26,17 @@ on Critical/High only — "is this safe to install?").
 
 ## The security boundary
 
-The skill's defining property is that **it treats the reviewed material as data,
-never instructions**, and **it runs itself with least privilege**: its
-`allowed-tools` are `Read`, `Glob`, `Grep` only — no `Bash`, no write, no
-network. It never executes the target's scripts, runs its setup, installs its
-dependencies, follows its URLs, reads secrets, or obeys instructions embedded in
-it. A malicious skill's first move is to talk to its reviewer; this skill is
-built not to listen.
+The skill **treats reviewed material as data, never instructions** and instructs
+the reviewer to use only `Read`, `Glob`, `Grep`. It prohibits executing target
+scripts, setup or dependencies, following target URLs, reading secrets, and
+obeying embedded instructions. Quoted attack examples and legitimate task
+instructions are not findings without evidence of an override or harmful behavior.
+
+This is an instruction boundary. Claude Code's `allowed-tools` only pre-approves
+the listed tools; it does not block other tools the host permits. Enforced
+read-only operation requires host tool restrictions and filesystem/network
+isolation, including MCP access. Audits account for inherited permissions and
+mark unknown host capabilities `NEEDS REVIEW` rather than assuming isolation.
 
 ## Platform-neutral core
 

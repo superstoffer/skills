@@ -12,8 +12,10 @@ to an effective trust boundary.
 
 ## Capability surfaces to inventory
 
-- **`allowed-tools` in frontmatter.** The primary grant. Absent = inherits the
-  session's tools. `Bash` unrestricted is broad; `Bash(git log:*)` is scoped.
+- **`allowed-tools` in frontmatter.** Adds pre-approvals for listed tools; it
+  does not remove access to unlisted tools. Session permissions apply whether
+  this field is present or absent. `Bash` pre-approves broad shell use;
+  `Bash(git log:*)` scopes that pre-approval, not all shell access.
   `Write`/`Edit` = mutation. `WebFetch`/`WebSearch` = egress. MCP tools appear as
   `mcp__<server>__<tool>`.
 - **MCP servers.** `.mcp.json` / `mcp.json` / `settings.json` `mcpServers`. Each
@@ -38,6 +40,16 @@ to an effective trust boundary.
 
 ## Notes
 
-`allowed-tools` is a *declaration*; unrestricted `Bash` makes it advisory. A
-skill can bypass its own narrow declaration by shelling out. Weigh the real
-commands the scripts run over the frontmatter's promise.
+Assess effective capabilities using the host's existing permissions, permission
+mode, enforced deny rules, sandbox, and connected MCP servers as well as the
+skill's added pre-approvals. A skill listing only `Read`, `Glob`, `Grep` can still
+use shell, write, or network tools permitted by its host. If host configuration
+is unavailable, mark the affected assessment `NEEDS REVIEW` and state which
+capabilities remain unknown.
+
+For an enforced read-only reviewer, the host must deny or remove mutation,
+execution, and network tools and constrain filesystem/network access as needed,
+including MCP paths. A prose prohibition is an instruction, not isolation.
+Never infer a hard boundary from `allowed-tools` alone.
+
+Source: [Claude Code skill tool pre-approvals](https://code.claude.com/docs/en/skills#pre-approve-tools-for-a-skill).

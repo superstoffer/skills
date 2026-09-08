@@ -31,6 +31,7 @@ host enforces may be ignored by another; do not assume one sandbox covers both.
 ## Porting checklist
 
 1. Copy `SKILL.md` + `references/astNN-*.md` + `report-format.md` unchanged.
-2. Replace Claude tool vocabulary in `SKILL.md`'s `allowed-tools` with the Codex
-   equivalent for a read-only reviewer (file read + search, no shell/network).
+2. Keep the instruction to use only file read and search. Configure and verify
+   the host's actual tool, filesystem, and network restrictions for an enforced
+   read-only reviewer; translating `allowed-tools` names does not establish one.
 3. Keep this `codex.md`; keep `claude-code.md` too if the reviewer audits both.

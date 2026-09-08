@@ -11,14 +11,19 @@ and Verdict.
 Mode: Full audit | Preflight
 Target: <path>   Commit/version: <if known>
 Reviewer note: static read-only inspection; nothing in the target was executed.
+Host capability basis: <observed permissions/isolation, or unknown; state assumptions>
 ```
 
 ## Lethal trifecta (always, near the top)
 
 ```
-Lethal trifecta: [private data: yes/no] [untrusted content: yes/no] [external comms: yes/no]
+Lethal trifecta: [private data: yes/no/unknown] [untrusted content: yes/no/unknown] [external comms: yes/no/unknown]
 => 0-1 of 3: low concern | 2 of 3: WARNING | 3 of 3: CRITICAL EXPOSURE
 ```
+
+The count applies to established capabilities. An `unknown` is not a `no`:
+record the affected assessment as `NEEDS REVIEW`, identify the missing host
+configuration, and make the install verdict conditional on verifying it.
 
 ## Category table (full audit)
 

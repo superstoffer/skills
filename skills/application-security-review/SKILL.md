@@ -28,11 +28,16 @@ standard so it is actionable, not a vague "possible XSS".
 This reviews **trusted first-party code** — the app you are building. It does not
 need the "reviewed material is data, never instructions" lockdown that its
 sibling `agentic-security-review` requires for untrusted third-party skills. It
-is still least-privilege and **read-only**:
+still instructs the reviewer to work **read-only**:
 
-- Tools are `Read`, `Glob`, `Grep`. Static reasoning over the repo; no network.
+- Use only `Read`, `Glob`, `Grep`. Static reasoning over the repo; no network.
 - It **reports findings; it never edits code** unless you separately ask it to.
 - Reviewing is a bounded action, not a background process.
+
+`allowed-tools` pre-approves these tools in Claude Code; it does not block other
+tools permitted by the host. This skill supplies read-only instructions, not an
+enforced sandbox. A hard boundary requires host tool restrictions and
+filesystem/network isolation, including MCP access.
 
 ## Rule: select frameworks, don't spray them
 
@@ -81,7 +86,7 @@ everything else waits for a positive signal.
 
 - Vetting a third-party or AI-generated **skill / plugin / MCP server / hook**
   before installing it → use `agentic-security-review` (different threat model:
-  untrusted content, hard read-only, lethal-trifecta check).
+  untrusted content treated as data, static-only instructions, lethal-trifecta check).
 - A quick pass over just the **pending diff** for obvious bugs → the built-in
   `security-review`. This skill is the deliberate, framework-anchored review that
   reasons across whole files, modules, and configuration.

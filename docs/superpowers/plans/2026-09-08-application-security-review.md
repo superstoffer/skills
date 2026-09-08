@@ -43,7 +43,11 @@ Fixtures (Task 7), not shipped: `.context/fixtures/appsec-clean/` and `.context/
 - Create: `skills/application-security-review/references/framework-selection.md`
 - Create: `skills/application-security-review/references/report-format.md`
 
-- [ ] **Step 1: Write the SKILL.md frontmatter and it MUST be read-only.**
+- [ ] **Step 1: Write the SKILL.md frontmatter with read-tool pre-approvals.**
+
+`allowed-tools` adds pre-approvals; it does not restrict other host-permitted
+tools. The body instructs read-only behavior. Enforced isolation requires host
+tool restrictions and filesystem/network controls, including MCP access.
 
 Frontmatter (exact):
 
@@ -119,7 +123,7 @@ problem, abuse scenario, remediation, OWASP guidance (cheat-sheet name),
 confidence. State: severity = impact × exploitability, independent of confidence.
 Include the worked `/api/invoices/:id` BOLA example from the spec.
 
-- [ ] **Step 5: Validate (YAML + least-privilege + selection cues).**
+- [ ] **Step 5: Validate (YAML + pre-approval list + selection cues).**
 
 Run:
 ```bash
@@ -128,7 +132,7 @@ import yaml
 d=yaml.safe_load(open("skills/application-security-review/SKILL.md").read().split("---\n")[1])
 assert d["name"]=="application-security-review"
 assert d["allowed-tools"]==["Read","Glob","Grep"], d["allowed-tools"]
-print("frontmatter OK, read-only OK")
+print("frontmatter OK, read-tool pre-approvals OK (host isolation not validated)")
 PY
 grep -q "Do not apply irrelevant frameworks" skills/application-security-review/SKILL.md && echo "selection rule present"
 grep -qi "graphql" skills/application-security-review/references/framework-selection.md && echo "api cues present"

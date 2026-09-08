@@ -40,11 +40,15 @@ would cripple the review, so it does not wrap it.
 
 Reviews trusted first-party code, so it does NOT need the "reviewed material is
 data, never instructions" lockdown that `agentic-security-review` requires.
-It is still least-privilege and read-only:
+Its review instructions remain read-only:
 
-- `allowed-tools: Read, Glob, Grep`.
-- No Write/Edit (reports findings; fixing is a separate, user-requested action).
+- `allowed-tools: Read, Glob, Grep` adds tool pre-approvals, not an access limit.
+- Instruct it not to use Write/Edit (fixing is a separate, user-requested action).
 - No network required — static reasoning over the source in the repo.
+
+The host's existing permissions still apply. Enforced read-only operation
+requires host tool restrictions and filesystem/network isolation, including
+MCP access; frontmatter validation cannot prove this boundary.
 
 ## The core intelligence: framework selection
 

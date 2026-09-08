@@ -5,12 +5,12 @@
     "name": "Christoffer Baadsgaard"
   },
   "description": "Christoffer Baadsgaard's Claude Code skills",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "plugins": [
     {
       "name": "superstoffer",
       "source": "./",
-      "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles; visual-design encodes the visual craft Claude skips unaided — OKLCH palettes, single emphasis, and an optical pass. agentic-security-review audits a skill, plugin, MCP server, or hook against the OWASP Agentic Skills Top 10 before install.",
+      "description": "Christoffer Baadsgaard's Claude Code skills. triage turns unstructured input into well-formed issues in your tracker; design-doc drafts and reviews software design docs; nest supplies NestJS version knowledge the model cannot have and verifies generated code compiles; visual-design encodes the visual craft Claude skips unaided — OKLCH palettes, single emphasis, and an optical pass. agentic-security-review audits a skill, plugin, MCP server, or hook against the OWASP Agentic Skills Top 10 before install. application-security-review reviews your own application code against the OWASP frameworks that apply — ASVS 5.0, Top 10:2025, and the API Security Top 10 — with cheat-sheet remediation.",
       "license": "MIT",
       "keywords": [
         "skills",
@@ -35,7 +35,12 @@
         "owasp",
         "agentic-security-review",
         "supply-chain",
-        "mcp"
+        "mcp",
+        "asvs",
+        "owasp-top-10",
+        "api-security",
+        "appsec",
+        "application-security-review"
       ]
     }
   ]

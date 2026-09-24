@@ -4,11 +4,12 @@ A Claude Code skill for NestJS work. It supplies the two things reading your pro
 
 ## What it does
 
-Three steps, on every invocation:
+Four steps, on every invocation:
 
-1. **Detects** your stack from resolved versions rather than the ranges in `package.json` — Nest, `@nestjs/config`, TypeORM, Prisma, module format, test runner, and monorepo layout.
-2. **Loads version deltas** only when they apply: NestJS v12 changes if you are on v12, ORM major changes if you have an ORM. Otherwise it stays out of the way.
-3. **Verifies** what it wrote — baselines the typecheck first, then compiles the module graph.
+1. **Detects** your stack from resolved versions rather than the ranges in `package.json` — Nest core and the `@nestjs/common` minor, `@nestjs/config`, TypeORM, Prisma, Drizzle, MikroORM, module format, test runner, Node floor, and monorepo layout.
+2. **Loads version deltas** only when they apply: NestJS v12 and v12.1 changes if you are on v12, ORM major changes if you have an ORM. Otherwise it stays out of the way.
+3. **Fetches the live docs chapter** for anything the deltas don't settle. docs.nestjs.com serves every chapter as markdown (`/<path>.md`, indexed by `/llms.txt`), so the skill stays current across 12.x minors without carrying the docs in context. Offline, it falls back to the static deltas and says so.
+4. **Verifies** what it wrote — baselines the typecheck first, then compiles the module graph.
 
 ## What it deliberately does not do
 
@@ -38,7 +39,7 @@ Required environment variables belong in the `ConfigModule` validation schema. `
 
 ## Verification
 
-A Nest module graph resolves at runtime, so a module missing from `imports` typechecks clean and throws on boot. The skill therefore baselines the typecheck before writing (so pre-existing errors are not mistaken for its own), re-runs it after, then compiles the module graph with `Test.createTestingModule`. Repairs are capped at two attempts and confined to files it wrote. It reports "compiles" and "module graph resolves" — never "works".
+A Nest module graph resolves at runtime, so a module missing from `imports` typechecks clean and throws on boot. The skill therefore baselines the typecheck before writing (so pre-existing errors are not mistaken for its own), re-runs it after, then compiles the module graph with `Test.createTestingModule`. Repairs are capped at two attempts and confined to files it wrote plus the `app.module.ts` / `main.ts` edits it announced. It reports "compiles" and "module graph resolves" — never "works".
 
 ## Install
 
@@ -70,6 +71,15 @@ NestJS server-side code only. Not general TypeScript, Express, or Fastify work. 
 
 ## What is verified
 
-The TypeORM 1.x path, triggering, conditional reference loading, and resolved-version detection were all exercised against a fixture before release. The NestJS v12 and Prisma 6→7 content is verified against the release notes, the official migration guide, and the shipped type declarations — but **not against a real project**, because no v12 or Prisma-8 codebase was available to test on. Monorepo write paths are likewise unexercised.
+**Last refreshed 2026-09-24**, against docs.nestjs.com as of NestJS 12.1 and on two real `nest new` fixtures (Node 26.8.1): ESM + Vitest, and CommonJS + Jest. Across three runs, an agent following only this skill built a from-scratch feature: Zod validation and a Prisma 7.10 SQLite service on both fixtures, plus the 12.1 security headers, CSRF, and cookie built-ins on the ESM fixture. Every run passed the typecheck against its baseline and booted `AppModule` in a real test app. Details are in the [results record](../../docs/superpowers/plans/2026-09-24-nest-docs-refresh-results.md).
 
-Treat those three as the parts most likely to need correction, and report anything that looks wrong.
+The runs found eleven things a docs audit alone would not have caught. Two examples: v12 packages hide `package.json` behind their `exports` map, and a CommonJS project on Prisma 7.10 needs `importFileExtension = ""` or Jest cannot load the client. All eleven are folded in.
+
+**Still unverified:**
+- monorepo write paths
+- Prisma 8, which is prerelease only
+- the Drizzle and MikroORM sections, which are checked against their docs chapters but not exercised
+- the Jest failure below Node 24.9
+- the Swagger CLI plugin at runtime
+
+Treat those as the parts most likely to need correction, and report anything that looks wrong. The live chapter fetch is also the skill's hedge against drift: when a 12.x minor changes something, the fetched chapter wins.

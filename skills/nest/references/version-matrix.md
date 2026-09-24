@@ -30,7 +30,7 @@ That is package consumption only — it does **not** mean v11 idioms still hold.
 @Get(':id') findOne(@Param('id', { schema: z.coerce.number().int().positive() }) id: number) {}
 ```
 
-**The decorator only attaches metadata.** Without a registered `StandardSchemaValidationPipe` (from `@nestjs/common`) it silently does not validate — no error, no warning, unvalidated input reaches the handler. If you emit a `schema` option anywhere, emit `app.useGlobalPipes(new StandardSchemaValidationPipe());` in the same change.
+**The decorator only attaches metadata.** Without a registered `StandardSchemaValidationPipe` (from `@nestjs/common`) it silently does not validate — no error, no warning, unvalidated input reaches the handler. If you emit a `schema` option anywhere, register the pipe in the same change — as `{ provide: APP_PIPE, useValue: new StandardSchemaValidationPipe() }` in `AppModule`, not `app.useGlobalPipes()` in `main.ts` as the docs show — e2e apps built from `AppModule` never run `main.ts`, so their validation is silently off too. This deliberately departs from the docs.
 
 **Second silent trap: custom decorators.** The pipe skips `createParamDecorator` decorators unless constructed with `validateCustomDecorators: true` (default `false`). `@Headers()` takes no `schema` at all — validate a header through a custom decorator plus that flag.
 
@@ -94,7 +94,7 @@ The `decorator` schematic emits `Reflector.createDecorator()`; the docs keep bot
 
 ## v12.1 built-ins — gate on `@nestjs/common` ≥ 12.1
 
-On 12.1+, do **not** add `helmet`, `csurf`/`csrf-csrf`, or `cookie-parser`/`@fastify/cookie` for new work; these ship in the framework, identical on Express and Fastify. Below 12.1 they do not exist.
+On 12.1+, do **not** add `helmet`, `csurf`/`csrf-csrf`, or `cookie-parser`/`@fastify/cookie` for new work; these ship in the framework, identical on Express and Fastify. Below 12.1 they do not exist. The two `app.*` methods have no module-level equivalent, so e2e apps built from `AppModule` lack them — when specs must see them, move the calls into a `configureApp(app)` function that both `main.ts` and the e2e setup call.
 
 - `app.useSecurityHeaders()` — Helmet 8 defaults, removes `X-Powered-By`. Call it right after `NestFactory.create()`: calling it after `init()`/`listen()`, or twice, throws, and `app.use()` middleware registered before it runs without the headers. → `/security/helmet.md`
 - `app.enableCsrfProtection()` — Fetch-Metadata (`Sec-Fetch-Site`/`Origin`) check, no tokens, sessions, or client changes. Same placement rule; rejections are `ForbiddenException` (403) before routing, so guards and controller filters never see them. → `/security/csrf.md`

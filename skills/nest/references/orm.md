@@ -100,8 +100,13 @@ prerelease, a different CLI that lacks `prisma migrate` and `prisma generate`. S
 
    **Module format follows the project.** Prisma infers it from `tsconfig.json`: an ESM Nest project
    (the v12 default) gets an ES module client and needs nothing. A **CommonJS** project adds
-   `moduleFormat = "cjs"` — and must, before Prisma 7.10, whenever tsconfig says `nodenext`, which
-   otherwise yields an ESM client inside a CJS app. Never add `cjs` to an ESM project.
+   `moduleFormat = "cjs"` — required before Prisma 7.10 whenever tsconfig says `nodenext`, which
+   otherwise yields an ESM client inside a CJS app; harmless from 7.10. Never add `cjs` to an ESM project.
+
+   **CommonJS + `nodenext` + Jest — what `nest new` generates — also needs `importFileExtension = ""`.**
+   Prisma still writes `.js` into the generated client's relative imports; tsc and the compiled app
+   accept them, but Jest resolves the `.ts` sources and every spec loading `PrismaService` fails with
+   `Cannot find module './internal/class.js'`. Verified on Prisma 7.10; the docs do not mention it.
 
 2. **Connection config lives in a config file**, not the schema's `datasource` block (which keeps only
    `provider`). From 7.10 the file is `prisma7.config.ts`; earlier releases name it
@@ -113,7 +118,7 @@ prerelease, a different CLI that lacks `prisma migrate` and `prisma generate`. S
    import { defineConfig, env } from 'prisma/config';
    export default defineConfig({
      schema: 'prisma/schema.prisma',
-     migrations: { path: 'prisma/migrations', seed: 'tsx prisma/seed.ts' },
+     migrations: { path: 'prisma/migrations' },
      datasource: { url: env('DATABASE_URL') },
    });
    ```
@@ -153,6 +158,9 @@ This needs `ConfigModule.forRoot({ isGlobal: true })` with `DATABASE_URL` in its
 '@prisma/client'` (or the generator's `output`).
 
 ### Choosing the adapter
+
+Constructor options differ per adapter: `PrismaBetterSqlite3({ url })`, `PrismaPg({ connectionString })`;
+the others take their driver's connection settings or a connection string — fetch the chapter.
 
 | Package | Class |
 |---|---|

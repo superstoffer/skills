@@ -111,28 +111,37 @@ Then verify, in this order:
 1. **Baseline first.** Run the typecheck *before* writing and record the error
    set. Real projects carry pre-existing errors; without a baseline you cannot
    tell yours from theirs, and will either report failure on good output or
-   start editing files nobody mentioned. A fresh `nest new` v12 project already
-   fails it (`supertest/types`); one just upgraded may carry TypeScript 6 errors.
+   start editing files nobody mentioned. A fresh ESM `nest new` v12 project
+   already fails it (`supertest/types`); one just upgraded may carry TS 6 errors.
 2. **Re-run after writing.** Only errors absent from the baseline are yours.
 3. **Compile the module graph.** `tsc` cannot see a missing `imports` entry, a
    provider missing from `exports`, or a cycle needing `forwardRef` — all of
    them typecheck clean and throw on boot. Run
-   `Test.createTestingModule({ imports: [AppModule] }).compile()`. If it cannot
-   run, say so rather than implying it passed. Under Jest on Node < 24.9 it
-   dies with `ERR_REQUIRE_ASYNC_MODULE` before resolving anything — report that
-   as an environment limit, not a wiring failure. `compile()` creates no HTTP
-   adapter, so a provider reading `HttpAdapterHost` at construction needs
-   `createNestApplication()` instead.
-4. **Repair at most twice.** Stop if the new-error count does not strictly
-   decrease. Confine edits to files you wrote plus the `app.module.ts` edit you
-   announced. Never revert the user's existing code to silence an error.
+   `Test.createTestingModule({ imports: [AppModule] }).compile()` from a
+   throwaway spec, deleted afterwards unless tests were requested. If it cannot
+   run, say so rather than implying it passed.
+   - Run it through the project's `test` script, never bare `npx jest`:
+     generated v12 CommonJS projects run Jest under
+     `node --experimental-vm-modules`, and without it every spec fails with
+     "Must use import to load ES Module". On Node < 24.9, Jest dies with
+     `ERR_REQUIRE_ASYNC_MODULE` regardless — report an environment limit, not a
+     wiring failure.
+   - `compile()` runs no lifecycle hooks and creates no HTTP adapter: it proves
+     wiring, not connectivity (a bad database URL still passes), and a provider
+     reading `HttpAdapterHost` at construction needs `createNestApplication()`.
+4. **Repair at most twice** — one budget for typecheck and graph/spec failures
+   together. Stop if the failure count does not strictly decrease. Confine edits
+   to files you wrote plus the `app.module.ts` / `main.ts` edits you announced.
+   Never revert the user's existing code to silence an error.
 5. **Report a fixed shape:** files written; command run; error count before and
    after; what remains. Say "compiles" and "module graph resolves" — never
    "works". If you generated specs and did not run them, say so and do not
    claim they pass.
 
 **Typecheck lookup order:** `package.json` scripts `typecheck` → `type-check`
-→ `npx tsc --noEmit -p <resolved tsconfig>`.
+→ `npx tsc --noEmit --incremental false -p <resolved tsconfig>` (generated
+tsconfigs set `incremental`, which otherwise rewrites `tsbuildinfo` even under
+`--noEmit`).
 
 **Exclude `build`.** `nest build` writes `dist/` and in many projects triggers
 codegen, containers, or database access. The one legitimate pre-step is

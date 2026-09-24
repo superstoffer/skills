@@ -96,7 +96,7 @@ gRPC/Kafka/WebSocket additions, and GraphQL v14 (still a non-goal).
 
 ## Budget
 
-SKILL.md ≤ ~150 lines; version-matrix.md ≤ ~170; orm.md ≈ 200 (it now covers four ORMs and loads only when one is present); no new files.
+SKILL.md ≈ 160 lines (fixture-proven verify-step facts pushed it past the ~150 target); version-matrix.md ≤ ~170; orm.md ≈ 210 (four ORMs, loaded only when one is present); no new files.
 
 ## Verification
 

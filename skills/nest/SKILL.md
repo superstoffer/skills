@@ -66,7 +66,7 @@ to depends on this.
 |---|---|
 | `nest-cli.json` `projects` / `sourceRoot` | Monorepo layout; every write path |
 | Resolved `@nestjs/core` | Whether `references/version-matrix.md` is needed |
-| Resolved `@nestjs/common`, **minor** | 12.1 added built-in security headers, CSRF, and cookies — gate them on this package, never on core |
+| Resolved `@nestjs/common`, `@nestjs/core`, and the active `@nestjs/platform-*`, **including minors** | v12.1 built-ins require 12.1+ across these packages; common's interfaces alone do not prove runtime support |
 | Resolved `@nestjs/config` | Its major moves independently of core and its peer range spans two Nest majors — gate config behaviour on this package, never on core |
 | Resolved `typeorm` + `@nestjs/typeorm` | Which TypeORM major, and whether the pair is compatible |
 | Resolved `@prisma/client`; the generator block; `prisma7.config.ts` / `prisma.config.ts` | Which Prisma major, and the generated client's import path |
@@ -127,8 +127,12 @@ Then verify, in this order:
      `ERR_REQUIRE_ASYNC_MODULE` regardless — report an environment limit, not a
      wiring failure.
    - `compile()` runs no lifecycle hooks and creates no HTTP adapter: it proves
-     wiring, not connectivity (a bad database URL still passes), and a provider
-     reading `HttpAdapterHost` at construction needs `createNestApplication()`.
+     wiring, not lifecycle-driven connectivity (e.g. Prisma's `$connect()`).
+     After compilation, `createNestApplication()` supplies the adapter for later
+     access. Constructor-time access to `HttpAdapterHost.httpAdapter` fails
+     before that call is reachable: defer access in code you are changing, or
+     supply a test override before `compile()` and report that verification is
+     limited by the override. Do not refactor unrelated providers to pass the check.
 4. **Repair at most twice** — one budget for typecheck and graph/spec failures
    together. Stop if the failure count does not strictly decrease. Confine edits
    to files you wrote plus the `app.module.ts` / `main.ts` edits you announced.
@@ -139,9 +143,15 @@ Then verify, in this order:
    claim they pass.
 
 **Typecheck lookup order:** `package.json` scripts `typecheck` → `type-check`
-→ `npx tsc --noEmit --incremental false -p <resolved tsconfig>` (generated
-tsconfigs set `incremental`, which otherwise rewrites `tsbuildinfo` even under
-`--noEmit`).
+→ `npx tsc --noEmit --incremental false -p <resolved tsconfig>` for non-composite
+projects. Check the effective config (`tsc --showConfig -p <resolved tsconfig>`),
+including inherited options: with `composite: true`, omit `--incremental false`
+and instead pass `--tsBuildInfoFile <temporary directory>/typecheck.tsbuildinfo`.
+Remove the temporary directory afterwards. This preserves source checking
+without rewriting the project's build cache. Disabling incremental compilation
+on a composite project fails with TS6379 before checking source; configuration
+errors that block checking must be reported as unverified, even if unchanged
+from the baseline.
 
 **Exclude `build`.** `nest build` writes `dist/` and in many projects triggers
 codegen, containers, or database access. The one legitimate pre-step is

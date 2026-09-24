@@ -29,9 +29,10 @@ v12.1 shipped features after the skill was written.
 4. **Drizzle and MikroORM are detected and routed.** The earlier non-goal on
    Drizzle is lifted because `@nestjs/drizzle` is now official. Each ORM gets
    only a few trap lines plus its chapter pointer.
-5. **Gate v12.1 features on `@nestjs/common` minor**, the package that exports
-   them. This extends the existing rule of gating config behaviour on
-   `@nestjs/config`.
+5. **Gate v12.1 features on common, core, and active platform minors.** Common
+   exports the interfaces, but core and the platform supply runtime support;
+   peer ranges permit mixed minors. Config behaviour remains gated separately
+   on `@nestjs/config`.
 6. **Verify on a real v12 fixture.** This closes the "not verified against a
    real project" gap.
 

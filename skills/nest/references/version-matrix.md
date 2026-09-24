@@ -92,7 +92,12 @@ NestFactory.create(AppModule, {
 
 The `decorator` schematic emits `Reflector.createDecorator()`; the docs keep both forms. **Mixing the two silently returns `undefined`.** `createDecorator()` generates a random metadata key (`uid(21)`) unless you pass `{ key: 'roles' }`. So `reflector.get('roles', handler)` against a `createDecorator` decorator yields `undefined`, and so does `reflector.get(Roles, handler)` against `@SetMetadata('roles', …)`. Pick one form per decorator and read it back by decorator reference, not by string.
 
-## v12.1 built-ins — gate on `@nestjs/common` ≥ 12.1
+## v12.1 built-ins — gate on common, core, and the active platform
+
+Require resolved `@nestjs/common`, `@nestjs/core`, and the active `@nestjs/platform-express`
+or `@nestjs/platform-fastify` to be ≥ 12.1 before emitting these built-ins. The peer ranges
+allow mixed minors: common 12.1 exposes interfaces that core/platform 12.0 do not implement,
+so checking common alone can produce code that typechecks and throws at startup.
 
 On 12.1+, do **not** add `helmet`, `csurf`/`csrf-csrf`, or `cookie-parser`/`@fastify/cookie` for new work; these ship in the framework, identical on Express and Fastify. Below 12.1 they do not exist. The two `app.*` methods have no module-level equivalent, so e2e apps built from `AppModule` lack them — when specs must see them, move the calls into a `configureApp(app)` function that both `main.ts` and the e2e setup call.
 

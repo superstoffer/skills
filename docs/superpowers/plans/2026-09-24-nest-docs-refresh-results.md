@@ -33,8 +33,9 @@ folded into the skill.
    `test/app.e2e-spec.ts: Cannot find module 'supertest/types'`. This is direct
    evidence for the baseline-first rule.
 4. **`tsc --noEmit` is not side-effect free.** Generated tsconfigs set
-   `incremental`, so tsc rewrites `tsbuildinfo`. The fallback typecheck is now
-   `--incremental false`.
+   `incremental`, so tsc rewrites `tsbuildinfo`. The fallback uses
+   `--incremental false` for non-composite projects; composite projects keep
+   incremental compilation and redirect `tsBuildInfoFile` to a temporary directory.
 5. **A global pipe registered in `main.ts` misses e2e apps.** e2e apps built from
    `AppModule` never run `app.useGlobalPipes()`, so schema validation is silently
    off there. The skill now registers `StandardSchemaValidationPipe` through

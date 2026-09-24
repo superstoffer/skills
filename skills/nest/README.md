@@ -6,7 +6,7 @@ A Claude Code skill for NestJS work. It supplies the two things reading your pro
 
 Four steps, on every invocation:
 
-1. **Detects** your stack from resolved versions rather than the ranges in `package.json` — Nest core and the `@nestjs/common` minor, `@nestjs/config`, TypeORM, Prisma, Drizzle, MikroORM, module format, test runner, Node floor, and monorepo layout.
+1. **Detects** your stack from resolved versions rather than the ranges in `package.json` — Nest common, core, and active platform minors, `@nestjs/config`, TypeORM, Prisma, Drizzle, MikroORM, module format, test runner, Node floor, and monorepo layout.
 2. **Loads version deltas** only when they apply: NestJS v12 and v12.1 changes if you are on v12, ORM major changes if you have an ORM. Otherwise it stays out of the way.
 3. **Fetches the live docs chapter** for anything the deltas don't settle. docs.nestjs.com serves every chapter as markdown (`/<path>.md`, indexed by `/llms.txt`), so the skill stays current across 12.x minors without carrying the docs in context. Offline, it falls back to the static deltas and says so.
 4. **Verifies** what it wrote — baselines the typecheck first, then compiles the module graph.

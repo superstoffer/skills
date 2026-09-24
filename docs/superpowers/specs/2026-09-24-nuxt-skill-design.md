@@ -1,8 +1,43 @@
 # Design: `nuxt` skill
 
 **Date:** 2026-09-24
-**Status:** Approved in brainstorming
+**Status:** Approved in brainstorming; revised after RED
 **Repo:** `superstoffer/skills`
+
+---
+
+## Revision 2 — rescoped after RED (supersedes "Structure" below)
+
+RED falsified the premise that task-oriented topic references were needed.
+Seven of eight coding runs were correct unaided, and two closed-book probe runs
+got 88 of 113 verified facts right both times — nearly all of data fetching,
+errors, route rules and runtime config. The spec's own rule applied: cut any
+reference RED does not justify.
+
+What survived groups by **why** Claude fails, not by task:
+
+```
+skills/nuxt/
+  SKILL.md                     detection, conditional loads, verify, 3 hard rules
+  references/
+    releases.md                what 4.2–4.5 added; what the docs describe that 4.5.2 lacks
+    compat-v5.md               the flag on a 4.x install (loaded only when set)
+    conventions.md             discovery and merge rules that fail silently
+    sources.lock               hashes of every cited docs page
+  scripts/check-freshness.sh
+```
+
+Two findings changed the design beyond the cut:
+
+- **The docs lead npm, often without badges.** `docs/4.x` describes 4.6 while
+  npm's latest is 4.5.2. The live-`.md` fallback is therefore gated: any API
+  taken from docs must be confirmed in the installed package (hard rule 2).
+- **`nuxi build` does not catch the one real failure.** Under compat 5, server
+  code without imports builds clean and 500s at runtime. Verification gained a
+  route-request step and a TypeScript 7 / `vue-tsc` pin.
+
+Records: `docs/superpowers/plans/2026-09-24-nuxt-red-results.md` and
+`...-green-results.md`.
 
 ---
 

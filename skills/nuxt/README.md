@@ -28,7 +28,7 @@ So the skill is three short references, not a documentation dump. `llms-full.txt
 
 ## Verification
 
-`nuxi build` exits 0 on the compat-5 failure above, so a build alone proves little. The skill baselines `nuxi typecheck` before writing, re-runs it after, builds, then starts the built server on a free port and requests each route it touched. It also knows that `typescript@latest` is now 7, which `vue-tsc` 3 cannot load, and pins `typescript@^6` when typecheck crashes. It reports "typechecks", "builds", "routes respond" — never "works".
+`nuxi build` exits 0 on the compat-5 failure above, so a build alone proves little. The skill baselines `nuxi typecheck` before writing, re-runs it after, builds, then runs the built output using the Nitro preset's local runner and requests each route it touched. Node-server output uses a free port; serverless and worker output needs a platform runner, and missing tooling is reported as blocked route verification. It also knows that `typescript@latest` is now 7, which `vue-tsc` 3 cannot load, and pins `typescript@^6` when typecheck crashes. It reports "typechecks", "builds", "routes respond" — never "works".
 
 ## Staying current
 

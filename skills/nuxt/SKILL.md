@@ -69,6 +69,7 @@ decides real behaviour. Read `node_modules/nuxt/package.json`, or the lockfile.
 | `layers/*`, `extends` | Layer rules in `references/conventions.md` |
 | `modules/*` | Local modules that register themselves |
 | Resolved `nitropack`, `h3`, `@unhead/vue` | Server and head API surface |
+| Nitro preset and output paths, including config, environment overrides and build output | How to run the built server for Step 3 |
 | Resolved `typescript`, `vue-tsc` | Whether typecheck can run (Step 3) |
 | Lockfile name | Package manager for Step 3 |
 
@@ -98,11 +99,16 @@ three major versions.
 2. **After writing,** re-run `npx nuxi typecheck`. New errors in files you
    wrote are yours.
 3. **Run `npx nuxi build`.**
-4. **If you added or changed server routes,** start
-   `node .output/server/index.mjs` with `PORT` set to a random free port,
-   request each route you touched, then stop that process by its PID. Never
-   `pkill` by pattern — other sessions may be serving from the same path.
-   A clean build does not prove a route loads.
+4. **If you added or changed server routes,** run the built output with a
+   local runner appropriate to the resolved Nitro preset. For `node-server`,
+   use `node .output/server/index.mjs` (adjust for custom output paths) with
+   `PORT` set to a random free port. Serverless and worker presets, such as
+   Vercel or Cloudflare, need their platform's local runner; their output is
+   not a standalone Node listener. If that runner is unavailable, report
+   route verification as blocked with the reason. Request each route you
+   touched, then stop the runner by its PID. Never `pkill` by pattern — other
+   sessions may be serving from the same path. A clean build does not prove
+   a route loads.
 
 Cap repairs at two attempts, confined to files you wrote. Report what was
 checked: "typechecks", "builds", "routes respond" — never "works".

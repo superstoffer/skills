@@ -45,10 +45,15 @@ for s in $sources; do
   fi
 done
 
-latest=$(npm view nuxt version 2>/dev/null || echo unknown)
 stamped=$(grep -hoE '^> Distilled for Nuxt [0-9.]+' "$refs"/*.md | head -1 | awk '{print $NF}')
+if latest=$(npm view nuxt version 2>/dev/null); then
+  [[ "$latest" != "${stamped:-}" ]] && changed=1
+else
+  echo "FETCH FAILED  npm nuxt@latest"
+  latest=unknown
+  failed=1
+fi
 echo "npm nuxt@latest: $latest · bundle distilled for: ${stamped:-unknown}"
-[[ "$latest" != "${stamped:-}" ]] && changed=1
 
 (( failed )) && exit 2
 (( changed )) && exit 1

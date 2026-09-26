@@ -50,10 +50,12 @@ Two things reading the project cannot supply, and this skill does:
 ## Step 1 — Detect
 
 **Read resolved versions, not declared ranges.** `package.json` holds
-`^11.0.0`, which cannot distinguish 11.0.0 from 11.2.3 — and that distinction
-decides real behaviour. Read `node_modules/<pkg>/package.json`, or the
-lockfile. pnpm workspaces write `catalog:` and `workspace:*`, which carry no
-version at all.
+`^12.0.0`, which cannot distinguish 12.0.1 from 12.1.0 — and that distinction
+decides which APIs exist. Read `node_modules/<pkg>/package.json` **by file
+path** (`node -p "require('./node_modules/<pkg>/package.json').version"`), or
+the lockfile. `require('<pkg>/package.json')` fails on v12 packages: their
+`exports` map does not expose it. pnpm workspaces write `catalog:` and
+`workspace:*`, which carry no version at all.
 
 **Resolve layout before reading any source path.** In Nest monorepo mode
 `src/main.ts` does not exist; sources live at `apps/<name>/src/` per
@@ -64,15 +66,18 @@ to depends on this.
 |---|---|
 | `nest-cli.json` `projects` / `sourceRoot` | Monorepo layout; every write path |
 | Resolved `@nestjs/core` | Whether `references/version-matrix.md` is needed |
-| Resolved `@nestjs/config` | Its major moves independently of core and its peer range spans two core majors — gate config behaviour on this package, never on core |
+| Resolved `@nestjs/common`, `@nestjs/core`, and the active `@nestjs/platform-*`, **including minors** | v12.1 built-ins require 12.1+ across these packages; common's interfaces alone do not prove runtime support |
+| Resolved `@nestjs/config` | Its major moves independently of core and its peer range spans two Nest majors — gate config behaviour on this package, never on core |
 | Resolved `typeorm` + `@nestjs/typeorm` | Which TypeORM major, and whether the pair is compatible |
-| Resolved `@prisma/client`; the generator block; `prisma.config.ts` | Which Prisma major, and the generated client's import path |
-| Installed `@prisma/adapter-*` | Required from Prisma 7 on — if none is installed, stop and ask rather than guessing one |
+| Resolved `@prisma/client`; the generator block; `prisma7.config.ts` / `prisma.config.ts` | Which Prisma major, and the generated client's import path |
+| Installed `@prisma/adapter-*` | Required from Prisma 7 on (MongoDB stays on Prisma 6) — if none is installed, stop and ask rather than guessing one |
+| `@nestjs/drizzle` / `drizzle-orm`, `@mikro-orm/*` | Load `references/orm.md`; both moved majors after training |
 | `package.json` `type` **and** tsconfig `module`/`moduleResolution` | Emitted module format. `"type": "module"` alone does not determine it |
 | `jest` / `vitest` in devDependencies | Spec idiom. If both are present, follow the test script |
+| `node --version`, when the runner is Jest on Nest v12 | Jest loads the ESM-only v12 packages only on Node ≥ 24.9 |
 | Lockfile name | Package manager, for the verify step |
 
-**Both ORMs present** (a project mid-migration): ask which to use. Do not guess.
+**Two ORMs present** (a project mid-migration): ask which to use. Do not guess.
 
 ## Step 2 — Load what you cannot know
 
@@ -81,8 +86,18 @@ Before writing anything:
 - `@nestjs/core` is v12 or later → read `references/version-matrix.md`.
 - An ORM is present → read `references/orm.md`.
 
-Neither file repeats general NestJS idiom. They carry only version deltas, so
-reading them is cheap and skipping them produces confidently wrong code.
+Neither file repeats general NestJS idiom. They carry only version deltas and
+the traps nobody would think to look up, so reading them is cheap and skipping
+them produces confidently wrong code.
+
+**Then fetch the chapter for anything they do not settle.** docs.nestjs.com
+serves every chapter as markdown at `https://docs.nestjs.com/<path>.md`, indexed
+one line per chapter at `https://docs.nestjs.com/llms.txt`. Before emitting any
+v12-era API the references do not cover — or where they point `→ /path.md` —
+fetch that chapter; do not reconstruct it from v11 recall. Never fetch
+`llms-full.txt` (1.6 MB). The docs describe the latest release, so check a
+chapter's "Starting with v12.x" notes against the resolved versions. If fetching
+is unavailable, work from the references and say so in the report.
 
 ## Step 3 — Write and verify
 
@@ -96,23 +111,47 @@ Then verify, in this order:
 1. **Baseline first.** Run the typecheck *before* writing and record the error
    set. Real projects carry pre-existing errors; without a baseline you cannot
    tell yours from theirs, and will either report failure on good output or
-   start editing files nobody mentioned.
+   start editing files nobody mentioned. A fresh ESM `nest new` v12 project
+   already fails it (`supertest/types`); one just upgraded may carry TS 6 errors.
 2. **Re-run after writing.** Only errors absent from the baseline are yours.
 3. **Compile the module graph.** `tsc` cannot see a missing `imports` entry, a
    provider missing from `exports`, or a cycle needing `forwardRef` — all of
    them typecheck clean and throw on boot. Run
-   `Test.createTestingModule({ imports: [AppModule] }).compile()`. If it cannot
+   `Test.createTestingModule({ imports: [AppModule] }).compile()` from a
+   throwaway spec, deleted afterwards unless tests were requested. If it cannot
    run, say so rather than implying it passed.
-4. **Repair at most twice.** Stop if the new-error count does not strictly
-   decrease. Confine edits to files you wrote plus the `app.module.ts` edit you
-   announced. Never revert the user's existing code to silence an error.
+   - Run it through the project's `test` script, never bare `npx jest`:
+     generated v12 CommonJS projects run Jest under
+     `node --experimental-vm-modules`, and without it every spec fails with
+     "Must use import to load ES Module". On Node < 24.9, Jest dies with
+     `ERR_REQUIRE_ASYNC_MODULE` regardless — report an environment limit, not a
+     wiring failure.
+   - `compile()` runs no lifecycle hooks and creates no HTTP adapter: it proves
+     wiring, not lifecycle-driven connectivity (e.g. Prisma's `$connect()`).
+     After compilation, `createNestApplication()` supplies the adapter for later
+     access. Constructor-time access to `HttpAdapterHost.httpAdapter` fails
+     before that call is reachable: defer access in code you are changing, or
+     supply a test override before `compile()` and report that verification is
+     limited by the override. Do not refactor unrelated providers to pass the check.
+4. **Repair at most twice** — one budget for typecheck and graph/spec failures
+   together. Stop if the failure count does not strictly decrease. Confine edits
+   to files you wrote plus the `app.module.ts` / `main.ts` edits you announced.
+   Never revert the user's existing code to silence an error.
 5. **Report a fixed shape:** files written; command run; error count before and
    after; what remains. Say "compiles" and "module graph resolves" — never
    "works". If you generated specs and did not run them, say so and do not
    claim they pass.
 
 **Typecheck lookup order:** `package.json` scripts `typecheck` → `type-check`
-→ `npx tsc --noEmit -p <resolved tsconfig>`.
+→ `npx tsc --noEmit --incremental false -p <resolved tsconfig>` for non-composite
+projects. Check the effective config (`tsc --showConfig -p <resolved tsconfig>`),
+including inherited options: with `composite: true`, omit `--incremental false`
+and instead pass `--tsBuildInfoFile <temporary directory>/typecheck.tsbuildinfo`.
+Remove the temporary directory afterwards. This preserves source checking
+without rewriting the project's build cache. Disabling incremental compilation
+on a composite project fails with TS6379 before checking source; configuration
+errors that block checking must be reported as unverified, even if unchanged
+from the baseline.
 
 **Exclude `build`.** `nest build` writes `dist/` and in many projects triggers
 codegen, containers, or database access. The one legitimate pre-step is
@@ -123,7 +162,9 @@ for reasons unrelated to what you wrote.
 
 ## Reference files
 
-- `references/version-matrix.md` — NestJS v11 → v12 deltas. Read during
+- `references/version-matrix.md` — NestJS v11 → v12.1 deltas. Read during
   detection when the project is on v12 or later.
-- `references/orm.md` — TypeORM and Prisma major-version deltas. Read during
-  detection when an ORM is present.
+- `references/orm.md` — TypeORM, Prisma, Drizzle, and MikroORM major-version
+  deltas. Read during detection when an ORM is present.
+- `https://docs.nestjs.com/llms.txt` — live chapter index, for anything the
+  references do not settle.
